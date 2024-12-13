@@ -43,4 +43,3 @@ jobs:
           -Dsonar.organization=nimamehranfar \
           -Dsonar.host.url=https://sonarcloud.io \
           -Dsonar.login=$SONAR_TOKEN
-

@@ -90,6 +90,11 @@
     <defaultGoal>clean verify apache-rat:check checkstyle:check spotbugs:check javadoc:javadoc</defaultGoal>
     <plugins>
       <plugin>
+        <groupId>org.sonarsource.scanner.maven</groupId>
+        <artifactId>sonar-maven-plugin</artifactId>
+        <version>6.0.1.5171</version>
+      </plugin>
+      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-assembly-plugin</artifactId>
         <configuration>

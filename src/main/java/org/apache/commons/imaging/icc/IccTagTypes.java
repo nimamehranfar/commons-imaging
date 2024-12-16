@@ -295,19 +295,19 @@ public enum IccTagTypes implements IccTagType {
     // "Viewing conditions parameters. The content of this structure is described in 6.5.25.",
     );
 
-    public final String name;
+    public final String privateName;
     public final String typeDescription;
     public final int signature;
 
     IccTagTypes(final String name, final String typeDescription, final int signature) {
-        this.name = name;
+        this.privateName = name;
         this.typeDescription = typeDescription;
         this.signature = signature;
     }
 
     @Override
     public String getName() {
-        return name;
+        return privateName;
     }
 
     @Override

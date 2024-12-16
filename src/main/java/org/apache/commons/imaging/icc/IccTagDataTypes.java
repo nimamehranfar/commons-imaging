@@ -97,17 +97,17 @@ public enum IccTagDataTypes implements IccTagDataType {
 
     private static final Logger LOGGER = Logger.getLogger(IccTagDataTypes.class.getName());
 
-    public final String name;
+    public final String privateName;
     public final int signature;
 
     IccTagDataTypes(final String name, final int signature) {
-        this.name = name;
+        this.privateName = name;
         this.signature = signature;
     }
 
     @Override
     public String getName() {
-        return name;
+        return privateName;
     }
 
     @Override

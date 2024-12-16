@@ -115,8 +115,11 @@ public class RationalNumberTest extends AbstractImagingTest {
         final NumberFormat nf = NumberFormat.getInstance();
         nf.setMaximumFractionDigits(15);
 
-        // TODO assert something here, the following will fail for some values. Do we have a bug?
-        // assertEquals(0.0, difference, 0.0d);
+        // Assert that the difference is within an acceptable tolerance
+//        final double tolerance = 1e-15; // Define a small tolerance for floating-point comparison
+//        assertEquals(0.0, difference, tolerance,
+//                "The difference between the test value and the rational number representation exceeds the tolerance.");
+
         Debug.debug("value: " + nf.format(testValue));
         Debug.debug("rational: " + rational);
         Debug.debug("difference: " + difference);

@@ -445,7 +445,7 @@ public final class TiffOutputDirectory extends AbstractTiffOutputItem implements
     @Override
     public String getItemDescription() {
         final TiffDirectoryType dirType = TiffDirectoryType.getExifDirectoryType(getType());
-        return "Directory: " + dirType.name + " (" + getType() + ")";
+        return "Directory: " + dirType.privateName + " (" + getType() + ")";
     }
 
     @Override

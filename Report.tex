@@ -68,6 +68,32 @@ The issues identified by SonarCloud are categorized as follows:
 \section{Refactoring and Rationale}
 A series of refactoring actions were taken to address the identified issues. For issues that were skipped, a rationale was provided. 
 
+\section{Assertion}
+[ERROR] Failures: 
+[ERROR]   RationalNumberTest.testRationalNumber:120 The difference between the test value and the rational number representation exceeds the tolerance. ==> expected: <0.0> but was: <0.0020000040531158447>
+[ERROR]   RationalNumberTest.testRationalNumber:120 The difference between the test value and the rational number representation exceeds the tolerance. ==> expected: <0.0> but was: <5.8950840342054944E-9>
+[ERROR]   RationalNumberTest.testRationalNumber:120 The difference between the test value and the rational number representation exceeds the tolerance. ==> expected: <0.0> but was: <1.1234567859341738E-9>
+[ERROR]   RationalNumberTest.testRationalNumber:120 The difference between the test value and the rational number representation exceeds the tolerance. ==> expected: <0.0> but was: <0.0020000040531158447>
+[ERROR]   RationalNumberTest.testRationalNumber:120 The difference between the test value and the rational number representation exceeds the tolerance. ==> expected: <0.0> but was: <0.09999990463256836>
+[ERROR]   RationalNumberTest.testRationalNumber:120 The difference between the test value and the rational number representation exceeds the tolerance. ==> expected: <0.0> but was: <0.09999990463256836>
+[ERROR]   RationalNumberTest.testRationalNumber:120 The difference between the test value and the rational number representation exceeds the tolerance. ==> expected: <0.0> but was: <0.09999990463256836>
+[ERROR]   RationalNumberTest.testRationalNumber:120 The difference between the test value and the rational number representation exceeds the tolerance. ==> expected: <0.0> but was: <0.09999990463256836>
+[ERROR]   RationalNumberTest.testRationalNumber:120 The difference between the test value and the rational number representation exceeds the tolerance. ==> expected: <0.0> but was: <9.223372034707292E18>
+[ERROR]   RationalNumberTest.testRationalNumber:120 The difference between the test value and the rational number representation exceeds the tolerance. ==> expected: <0.0> but was: <9.223372034707292E18>
+[ERROR]   RationalNumberTest.testRationalNumber:120 The difference between the test value and the rational number representation exceeds the tolerance. ==> expected: <0.0> but was: <9.223372034707292E18>
+[ERROR]   RationalNumberTest.testRationalNumber:120 The difference between the test value and the rational number representation exceeds the tolerance. ==> expected: <0.0> but was: <9.223372034707292E18>
+[ERROR]   RationalNumberTest.testRationalNumber:120 The difference between the test value and the rational number representation exceeds the tolerance. ==> expected: <0.0> but was: <9.223372034707292E18>
+[ERROR]   RationalNumberTest.testRationalNumber:120 The difference between the test value and the rational number representation exceeds the tolerance. ==> expected: <0.0> but was: <9.223372034707292E18>
+[ERROR]   RationalNumberTest.testRationalNumber:120 The difference between the test value and the rational number representation exceeds the tolerance. ==> expected: <0.0> but was: <1.1234567859341738E-9>
+[INFO] 
+[ERROR] Tests run: 1076, Failures: 15, Errors: 0, Skipped: 7
+[INFO] 
+
+Patterns in Failures:
+Small differences (<1e-9) might be acceptable due to floating-point arithmetic.
+Large differences (e.g., 0.09999990463256836 or 9.223372034707292E18) are likely bugs or limitations in RationalNumber handling.
+So implemention of rationalNumber.valueOf method must be checked by the developer. problem tagged as accepted on sonarcloud.
+
 \newpage
 
 % Docker Image Creation and Containerization

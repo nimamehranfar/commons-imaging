@@ -57,16 +57,16 @@ public enum IptcTypes implements IptcType {
 
     public final int type;
 
-    public final String name;
+    public final String privateName;
 
     IptcTypes(final int type, final String name) {
         this.type = type;
-        this.name = name;
+        this.privateName = name;
     }
 
     @Override
     public String getName() {
-        return name;
+        return privateName;
     }
 
     @Override
@@ -76,6 +76,6 @@ public enum IptcTypes implements IptcType {
 
     @Override
     public String toString() {
-        return name + " (" + type + ")";
+        return privateName + " (" + type + ")";
     }
 }

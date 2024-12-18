@@ -13,21 +13,33 @@
 # See the license for the specific language governing permissions and
 # limitations under the license.
 
-name: Code Coverage
+name: Deploy Code Coverage Report to GitHub Pages
 
 on:
   push:
-    branches:
-      - master
-  pull_request:
+    branches: ["master"]
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
-  build:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
       - name: Set up JDK 21
         uses: actions/setup-java@v3
@@ -43,11 +55,18 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven
 
-      - name: Run Tests and Generate Coverage
+      - name: Run Tests and Generate JaCoCo Report
         run: mvn clean test jacoco:report
 
-      - name: Upload Coverage Report
-        uses: actions/upload-artifact@v3
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload JaCoCo Report to GitHub Pages
+        uses: actions/upload-pages-artifact@v3
         with:
           name: coverage-report
-          path: target/site/jacoco/
+          path: target/site/jacoco
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

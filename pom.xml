@@ -92,7 +92,27 @@
       <plugin>
         <groupId>org.sonarsource.scanner.maven</groupId>
         <artifactId>sonar-maven-plugin</artifactId>
-        <version>6.0.1.5171</version>
+        <version>5.0.0.4389</version>
+      </plugin>
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>0.8.12</version>
+        <executions>
+          <execution>
+            <id>default-prepare-agent</id>
+            <goals>
+              <goal>prepare-agent</goal> <!-- Prepare the agent for coverage collection -->
+            </goals>
+          </execution>
+          <execution>
+            <id>default-report</id>
+            <goals>
+              <goal>report</goal> <!-- Generate the coverage report -->
+            </goals>
+            <phase>post-integration-test</phase> <!-- Ensure this runs after tests -->
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -108,6 +128,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.5.2</version>
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -200,7 +221,8 @@
               <exclude>src/test/**/*.hdr</exclude>
               <exclude>src/main/resources/org/apache/commons/imaging/formats/xpm/rgb.txt</exclude>
               <exclude>.asf.yaml</exclude>
-			  <exclude>**/*.tex</exclude>			  
+			  <exclude>**/*.tex</exclude>		
+			  <exclude>**/Dockerfile</exclude>			  
             </excludes>
           </configuration>
         </plugin>

@@ -62,9 +62,9 @@ jobs:
         uses: actions/configure-pages@v5
 
       - name: Upload JaCoCo Report to GitHub Pages
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: coverage-report
+          name: github-pages
           path: target/site/jacoco
 
       - name: Deploy to GitHub Pages

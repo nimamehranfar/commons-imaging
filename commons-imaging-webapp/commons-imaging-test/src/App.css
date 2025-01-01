@@ -1,0 +1,92 @@
+/* General styles */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f7f7f7;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+#root{
+  width: 100%;
+}
+
+.app {
+  text-align: center;
+  padding: 20px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  max-width: 90%;
+  width: 90%;
+  margin: 0 auto;
+}
+
+.title {
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+/* Upload section styles */
+.upload-section {
+  margin-bottom: 20px;
+}
+
+.upload-section input[type="file"] {
+  margin-right: 10px;
+}
+
+.upload-section select {
+  margin-right: 10px;
+}
+
+.upload-section button {
+  padding: 10px 20px;
+  background: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.upload-section button:hover {
+  background: #0056b3;
+}
+
+/* Image display styles */
+.image-display {
+  display: flex;
+  justify-content: space-around;
+  gap: 10px;
+}
+
+.image-frame {
+  width: 45%;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  padding: 10px;
+  background: #f9f9f9;
+}
+
+.image-frame h2 {
+  font-size: 16px;
+  color: #555;
+  margin-bottom: 10px;
+}
+
+.image-frame img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  border-radius: 5px;
+}
+
+.image-frame p {
+  color: #888;
+  font-size: 14px;
+}

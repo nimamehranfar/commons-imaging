@@ -1,0 +1,26 @@
+version: '3.7'
+
+services:
+  backend:
+    build:
+      context: ./Backend
+    ports:
+      - "8080:8080"
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: ./commons-imaging-test
+    ports:
+      - "80:80"
+    environment:
+      - REACT_APP_API_URL=http://backend:8080  # Set API URL to the backend service name
+    networks:
+      - app-network
+    depends_on:
+      - backend
+
+networks:
+  app-network:
+    driver: bridge

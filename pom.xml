@@ -115,6 +115,26 @@
         </executions>
       </plugin>
       <plugin>
+        <groupId>org.pitest</groupId>
+        <artifactId>pitest-maven</artifactId>
+        <version>1.15.2</version>
+<!--        <configuration>-->
+<!--          <targetClasses>-->
+<!--            <param>org.apache.commons.imaging.*</param>-->
+<!--          </targetClasses>-->
+<!--          <targetTests>-->
+<!--            <param>org.apache.commons.imaging.roundtrip.*Test</param>-->
+<!--          </targetTests>-->
+<!--        </configuration>-->
+        <dependencies>
+          <dependency>
+            <groupId>org.pitest</groupId>
+            <artifactId>pitest-junit5-plugin</artifactId>
+            <version>1.2.1</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-assembly-plugin</artifactId>
         <configuration>
@@ -222,7 +242,8 @@
               <exclude>src/main/resources/org/apache/commons/imaging/formats/xpm/rgb.txt</exclude>
               <exclude>.asf.yaml</exclude>
 			  <exclude>**/*.tex</exclude>		
-			  <exclude>**/Dockerfile</exclude>			  
+			  <exclude>**/Dockerfile</exclude>
+              <exclude>commons-imaging-webapp/**</exclude>
             </excludes>
           </configuration>
         </plugin>
@@ -266,6 +287,22 @@
       <artifactId>commons-lang3</artifactId>
       <version>3.17.0</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.13.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.openjdk.jmh</groupId>
+      <artifactId>jmh-core</artifactId>
+      <version>1.37</version>
+    </dependency>
+    <dependency>
+      <groupId>org.openjdk.jmh</groupId>
+      <artifactId>jmh-generator-annprocess</artifactId>
+      <version>1.37</version>
     </dependency>
   </dependencies>
   <reporting>
@@ -367,6 +404,9 @@
             <exclude>src/test/data/**/*.hdr</exclude>
             <exclude>src/main/resources/org/apache/commons/imaging/formats/xpm/rgb.txt</exclude>
             <exclude>.asf.yaml</exclude>
+            <exclude>**/*.tex</exclude>
+            <exclude>**/Dockerfile</exclude>
+            <exclude>commons-imaging-webapp/**</exclude>
           </excludes>
         </configuration>
       </plugin>

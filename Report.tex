@@ -6,7 +6,7 @@
 \usepackage{fancyhdr}  % for header and footer customization
 \usepackage[hidelinks]{hyperref}
 
-\title{Testing and Quality Analysis of Commons-Imaging Project}
+\title{Testing and Quality Analysis of commons-imaging Project}
 \author{Nima Mehranfar}
 \date{\today}
 
@@ -46,10 +46,55 @@ The objectives of this testing project are:
 
 % CI/CD Pipeline Setup
 \chapter{CI/CD Pipeline}
-The commons-imaging project has been integrated into a CI/CD pipeline that is buildable both locally and on cloud servers. The pipeline automatically builds, tests, and deploys the application to ensure continuous integration and delivery.
+The commons-imaging project has been integrated into a CI/CD pipeline that is buildable both locally and on cloud servers/github. The pipeline automatically builds, tests, and deploys the application to ensure continuous integration and delivery.
 
 \section{CI/CD Configuration}
-The configuration of the CI/CD pipeline uses tools like Jenkins, GitHub Actions, or GitLab CI.
+The configuration of the CI/CD pipeline uses GitHub Actions.
+this is the file for github workflow:
+
+\begin{lstlisting}[language=java, caption=maven.yml]
+name: Java CI
+
+on: [push, pull_request, workflow_dispatch]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+      matrix:
+        os: [windows-latest, macos-13, ubuntu-latest]
+        java: [ 8, 11, 17, 21 ]
+        experimental: [false]
+        include:
+            - java: 23
+              os: ubuntu-latest
+              experimental: false
+            - java: 24-ea
+              os: ubuntu-latest
+              experimental: true
+
+    steps:
+    # https://github.com/actions/checkout/issues/226#issuecomment-854736025
+    # Why is this not an issue in other Apache Commons repos?
+    - name: Prepare git
+      run: |-
+        git config --global core.autocrlf false
+        git config --global core.eol lf
+    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      with:
+        persist-credentials: false
+    - name: Set up JDK ${{ matrix.java }}
+      uses: actions/setup-java@8df1039502a15bceb9433410b1a100fbe190c53b # v4.5.0
+      with:
+        distribution: 'temurin'
+        java-version: ${{ matrix.java }}
+    - name: Build with Maven
+      run: mvn --errors --show-version --batch-mode --no-transfer-progress
+\end{lstlisting}
 
 \newpage
 
@@ -68,23 +113,17 @@ The issues identified by SonarCloud are categorized as follows:
 \section{Refactoring and Rationale}
 A series of refactoring actions were taken to address the identified issues. For issues that were skipped, a rationale was provided. 
 
-\section{Assertion}
+as the image shows there were 421 issues which 7 of them were blocker severity and 21 high severity so i fixed some issues for example:
+they were lack of assertion for test cases and confusing name(duplicate) for methods and variables.
+as you can see in the second image 9 issues fixed and 1 issue added because there was a test case which revealed a bug in the code (also developer of code itself commented that there was potentially a bug) so adding assertion was halting build process as shown in third image and error information below:
+
+
+Assertion
 [ERROR] Failures: 
 [ERROR]   RationalNumberTest.testRationalNumber:120 The difference between the test value and the rational number representation exceeds the tolerance. ==> expected: <0.0> but was: <0.0020000040531158447>
-[ERROR]   RationalNumberTest.testRationalNumber:120 The difference between the test value and the rational number representation exceeds the tolerance. ==> expected: <0.0> but was: <5.8950840342054944E-9>
-[ERROR]   RationalNumberTest.testRationalNumber:120 The difference between the test value and the rational number representation exceeds the tolerance. ==> expected: <0.0> but was: <1.1234567859341738E-9>
-[ERROR]   RationalNumberTest.testRationalNumber:120 The difference between the test value and the rational number representation exceeds the tolerance. ==> expected: <0.0> but was: <0.0020000040531158447>
-[ERROR]   RationalNumberTest.testRationalNumber:120 The difference between the test value and the rational number representation exceeds the tolerance. ==> expected: <0.0> but was: <0.09999990463256836>
-[ERROR]   RationalNumberTest.testRationalNumber:120 The difference between the test value and the rational number representation exceeds the tolerance. ==> expected: <0.0> but was: <0.09999990463256836>
-[ERROR]   RationalNumberTest.testRationalNumber:120 The difference between the test value and the rational number representation exceeds the tolerance. ==> expected: <0.0> but was: <0.09999990463256836>
-[ERROR]   RationalNumberTest.testRationalNumber:120 The difference between the test value and the rational number representation exceeds the tolerance. ==> expected: <0.0> but was: <0.09999990463256836>
-[ERROR]   RationalNumberTest.testRationalNumber:120 The difference between the test value and the rational number representation exceeds the tolerance. ==> expected: <0.0> but was: <9.223372034707292E18>
-[ERROR]   RationalNumberTest.testRationalNumber:120 The difference between the test value and the rational number representation exceeds the tolerance. ==> expected: <0.0> but was: <9.223372034707292E18>
-[ERROR]   RationalNumberTest.testRationalNumber:120 The difference between the test value and the rational number representation exceeds the tolerance. ==> expected: <0.0> but was: <9.223372034707292E18>
-[ERROR]   RationalNumberTest.testRationalNumber:120 The difference between the test value and the rational number representation exceeds the tolerance. ==> expected: <0.0> but was: <9.223372034707292E18>
-[ERROR]   RationalNumberTest.testRationalNumber:120 The difference between the test value and the rational number representation exceeds the tolerance. ==> expected: <0.0> but was: <9.223372034707292E18>
-[ERROR]   RationalNumberTest.testRationalNumber:120 The difference between the test value and the rational number representation exceeds the tolerance. ==> expected: <0.0> but was: <9.223372034707292E18>
-[ERROR]   RationalNumberTest.testRationalNumber:120 The difference between the test value and the rational number representation exceeds the tolerance. ==> expected: <0.0> but was: <1.1234567859341738E-9>
+.
+.
+.
 [INFO] 
 [ERROR] Tests run: 1076, Failures: 15, Errors: 0, Skipped: 7
 [INFO] 
@@ -92,36 +131,114 @@ A series of refactoring actions were taken to address the identified issues. For
 Patterns in Failures:
 Small differences (<1e-9) might be acceptable due to floating-point arithmetic.
 Large differences (e.g., 0.09999990463256836 or 9.223372034707292E18) are likely bugs or limitations in RationalNumber handling.
-So implemention of rationalNumber.valueOf method must be checked by the developer. problem tagged as accepted on sonarcloud.
+So implemention of rationalNumber.valueOf method must be checked by the developer. problem tagged as "Accepted" on SonarQube.
 
-\newpage
+
+\section{docker}
+ docker build -t nimamhr/commons-imaging .
+ is not working because this project is an api and/or utility and doesn't contain main method so i created a simple webapp using react.js for frontend and java spring boot for backend.
 
 % Docker Image Creation and Containerization
 \chapter{Docker Image and Containerization}
-A Docker image for the commons-imaging project is created and pushed to DockerHub. This image is configured to be orchestrated using Docker Compose or Kubernetes.
+two Docker images for the commons-imaging-webapp frontend and backend are created and pushed to DockerHub.This image is configured to be orchestrated using Docker Compose so a docker container created to run both at the same time with configured port.
+these are the yaml files used to create docker images and container
 
-\section{Dockerfile}
-\begin{lstlisting}[language=java, caption=Example Dockerfile for commons-imaging]
-FROM openjdk:11-jre-slim
+\section{Dockerfile for frontend}
+\begin{lstlisting}[language=java, caption=Dockerfile for commons-imaging-test-frontend]
+FROM node:18-alpine AS build
 WORKDIR /app
-COPY . /app
-RUN ./mvnw clean install
-ENTRYPOINT ["java", "-jar", "target/commons-imaging.jar"]
+COPY package.json package-lock.json ./
+RUN npm install
+COPY . ./
+RUN npm run build
+FROM nginx:alpine
+COPY --from=build /app/build /usr/share/nginx/html
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
 \end{lstlisting}
+
+\begin{lstlisting}[language=java, caption=Dockerfile for commons-imaging-test-backend]
+FROM openjdk:24-jdk
+WORKDIR /app
+COPY .mvn/ .mvn
+COPY mvnw pom.xml ./
+RUN ./mvnw dependency:go-offline -B
+COPY src/ ./src
+RUN ./mvnw clean package -DskipTests
+EXPOSE 8080
+CMD ["java", "-jar", "target/test-0.0.1-SNAPSHOT.jar"]
+\end{lstlisting}
+
+\begin{lstlisting}[language=java, caption=Example Dockerfile for container compose]
+version: '3.7'
+
+services:
+  backend:
+    build:
+      context: ./Backend
+    ports:
+      - "8080:8080"
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: ./commons-imaging-test
+    ports:
+      - "80:80"
+    environment:
+      - REACT_APP_API_URL=http://backend:8080  # Set API URL to the backend service name
+    networks:
+      - app-network
+    depends_on:
+      - backend
+
+networks:
+  app-network:
+    driver: bridge
+\end{lstlisting}
+
+
+also these repositories are synced with dockerhub and can be pulled and runned with commands below:
+
+pull with:
+\begin{lstlisting}[language=bash]
+docker pull nimamhr/commons-imaging-webapp-frontend:latest
+docker pull nimamhr/commons-imaging-webapp-backend:latest
+\end{lstlisting}
+
+and run with:
+\begin{lstlisting}[language=bash]
+docker run -d -p 8080:8080 nimamhr/commons-imaging-webapp-backend:latest
+docker run -d -p 80:80 nimamhr/commons-imaging-webapp-frontend:latest
+\end{lstlisting}
+
+access with:
+http://localhost/
 
 \newpage
 
 % Code Coverage Analysis
 \chapter{Code Coverage Analysis}
-Code coverage analysis is performed using Cobertura or Jacoco to determine the extent of test coverage in the commons-imaging project.
+Code coverage analysis is performed using Jacoco to determine the extent of test coverage in the commons-imaging project.
+
+Setting up JaCoCo: adding plugin to pom.xml
+\begin{lstlisting}[language=bash]
+mvn clean test
+mvn clean verify
+\end{lstlisting}
 
 \section{Coverage Results}
 The code coverage results are as follows:
+Element Missed Instructions Cov.	Missed Branches	Cov.	Missed	Cxty	Missed	Lines	Missed	Methods	Missed	Classes
+Total	21,380 of 95,452	77%	2,570 of 7,199	64%	2,448	6,277	3,760	16,901	504	2,547	15	432
 \begin{itemize}
-    \item \textbf{Lines Covered}: 85\%
-    \item \textbf{Branches Covered}: 78\%
-    \item \textbf{Methods Covered}: 90\%
+
+ \item \textbf{}:
 \end{itemize}
+The final code coverage results after generatiing tests and adding some manull tests(reports are on the next steps/pages) are as follows:
+Element Missed Instructions Cov.	Missed Branches	Cov.	Missed	Cxty	Missed	Lines	Missed	Methods	Missed	Classes
+Total	18,077 of 95,452	81%	2,327 of 7,199	67%	2,178	6,277	3,165	16,901	345	2,547	10	432
 
 \newpage
 
@@ -129,12 +246,63 @@ The code coverage results are as follows:
 \chapter{Mutation Testing with PiTest}
 Mutation testing is used to analyze the effectiveness of the test cases by introducing small modifications (mutations) to the code and ensuring that tests can detect the changes.
 
+after adding plugins and depencencies:
+mvn org.pitest:pitest-maven:mutationCoverage
+
+
+
+- Statistics
+================================================================================
+>> Line Coverage (for mutated classes only): 2973/3904 (76%)
+>> Generated 3564 mutations Killed 1993 (56%)
+>> Mutations with no coverage 725. Test strength 70%
+>> Ran 27368 tests (7.68 tests per mutation)
+Enhanced functionality available at https://www.arcmutate.com/
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  51:10 min
+[INFO] Finished at: 2025-01-03T04:29:03+01:00
+[INFO] ------------------------------------------------------------------------
+
+
+
+
 \section{Mutation Test Results}
 The mutation test results show that:
+
+Number of Classes	Line Coverage	Mutation Coverage	Test Strength
+69	76\% 2973/3904	56\% 1993/3564	70\% 1993/2839
+
+
+The number of survived mutants can be calculated as:
+
+\begin{quote}
+    Survived Mutants
+=
+Total Mutants -
+Killed Mutants
+Survived Mutants=Total Mutants-Killed Mutants
+Substitute the values:
+
+Survived Mutants=Total Mutants-Killed Mutants
+Survived Mutants
+=
+3564 -
+1993
+=
+1571
+Survived Mutants=3564-1993=1571
+
+\end{quote} 
 \begin{itemize}
-    \item \textbf{Mutants Killed}: 75\%
-    \item \textbf{Surviving Mutants}: 25\%
+    \item \textbf{Mutants Killed}:
+    \item \textbf{Surviving Mutants}:
 \end{itemize}
+
+org.apache.commons.imaging.ColorTools.java zero coverage for example: lets add some tests for this class in file ColorToolsTest
+and we increased line coverage to 60\%37/62, mutation covrage to 62\%18/29	, test strength to 90\%18/20 and Surviving Mutants are 38\% 11 . not 100\% line coverage because we didn't add test for all methods.
+
 
 \newpage
 
@@ -142,37 +310,138 @@ The mutation test results show that:
 \chapter{Performance Testing with JMH}
 Performance tests are implemented using JMH to identify performance bottlenecks in the commons-imaging project.
 
+ Directory: C:/Users/mehra/IdeaProjects/commons-imaging/src/test/java/org/apache/commons/imaging/benchmark
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----          1/4/2025   4:04 AM           3915 ImagingBenchmark.java
+-a----          1/4/2025   3:17 AM        1042592 sample.jpg
+-a----          1/4/2025   3:18 AM        1006708 sample.png
+-a----          1/4/2025   3:16 AM        1131930 sample.tiff
+
+i created some benchmarks and run by these commands:
+\begin{lstlisting}[language=bash]
+mvn clean install
+\end{lstlisting}
+then
+we run ImagingBenchmark class with configuration below:
+
+\begin{lstlisting}[language=java, caption=ImagingBenchmark-configuration]
+@BenchmarkMode(Mode.AverageTime)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@State(Scope.Thread)
+@Fork(1)
+@Warmup(iterations = 3)
+@Measurement(iterations = 5)
+\end{lstlisting}
+
 \section{Stress Testing Results}
 The most cumbersome components were stress-tested using JMH, and the results showed the following:
+
+Benchmark                                    Mode  Cnt    Score   Units
+ImagingBenchmark.testBmpDecoding             avgt         1.157          ms/op
+ImagingBenchmark.testBmpImageInfoRetrieval   avgt         0.300          ms/op
+ImagingBenchmark.testBmpImageWriting         avgt         8.348          ms/op
+ImagingBenchmark.testImageInfoRetrieval      avgt         0.476          ms/op
+ImagingBenchmark.testImageResizing           avgt        36.858          ms/op
+ImagingBenchmark.testJpegDecoding            avgt       212.311          ms/op
+ImagingBenchmark.testPngEncoding             avgt       132.896          ms/op
+ImagingBenchmark.testTiffMetadataExtraction  avgt         1.217          ms/op
+
+
 \begin{itemize}
-    \item \textbf{Image Decoding Performance}: 0.5s per image (optimized from 1s).
-    \item \textbf{Compression Time}: 3s (with improvements for large images).
+    \item \textbf{Image Decoding Performance}:
+    \item \textbf{writing Time}:
+    ...
 \end{itemize}
 
 \newpage
 
 % Automated Test Generation
 \chapter{Automated Test Generation}
-Automated tests were generated using tools to improve coverage on poorly tested components. These tests focus on edge cases and scenarios not previously covered.
+Automated tests were generated using Randoop to improve coverage on poorly tested components. These tests focus on edge cases and scenarios not previously covered.
+
+from jacoco report we know that 3 packages (internal,formats/psd/dataparsers,formats/tiff) have low coverage as seen in image below so we want to generate test for all the classes inside them.
+
+\begin{lstlisting}[language=bash]
+cd target/classes
+find org/apache/commons/imaging/internal -name "*.class" | sed 's/\//./g' | sed 's/\.class\$//'
+find org/apache/commons/imaging/formats/psd/dataparsers -name "*.class" | sed 's/\//./g' | sed 's/\.class\$//'
+find org/apache/commons/imaging/formats/tiff -name "*.class" | sed 's/\//./g' | sed 's/\.class\$//'
+\end{lstlisting}
+
+then pasted all the classes to Randoop\_Test\_Classes.txt file and run command below and output to randoop folder:
+\begin{lstlisting}[language=bash]
+java -cp "randoop-all-4.3.2.jar;target/classes" randoop.main.Main gentests $(Get-Content Randoop_Test_Classes.txt | ForEach-Object \{ "--testclass=$\_"\} ) --time-limit=200 --junit-output-dir=src/test/java/org/apache/commons/imaging/randoop/
+\end{lstlisting}
+with some renaming and replacing redundent classes we can now achive higher coverage as we see in the report as seen in the image below but of course this methode is not efficient enough to cover all methods with enough tests and it produces way more tests than needed and too much redundency.
+
 
 \newpage
 
-% Security Analysis with OWASP
-\chapter{Security Analysis with OWASP FindSecBugs and OWASP DC}
-Security analysis is performed using OWASP FindSecBugs and OWASP Dependency-Check (OWASP DC) to identify vulnerabilities in the codebase.
+% Security Analysis with synk
+\chapter{Security Analysis with synk}
+
+steps:
+\begin{lstlisting}[language=bash]
+npm install -g snyk
+snyk auth
+snyk test
+snyk test --json > snyk-report.json
+\end{lstlisting}
+no vulnerablity for commons imaging as seen in the image below. but there are some vulnerable pathes in the webapp backend dockerfile so i will report them instead
+
+
+for example just changing the openjdk version to newer one removes so many of the vulnerablities like the image below.
 
 \section{Security Issues Found}
-The following security issues were identified:
+The following security issues were identified: 7 low level vulnerability found and they all are Unsanitized input and seem to be false positive because this project is api and utility so there is no allowed directory and user can use any directory they want but if we want to limit user for his current directory, we can fix the all issues like the example image below Unsanitized input from a command line argument flows into listFiles, where it is used as a path. This may result in a Path Traversal vulnerability and allow an attacker to manipulate arbitrary files in class: src/test/java/org/apache/commons/imaging/examples/tiff/SurveyTiffFolder.java:collectPaths.class:
+[image]
+
+and we fix it by:
+
+\begin{lstlisting}[language=java, caption=SurveyTiffFolder.java:collectPath.class fix]
+private static final String BASE\_DIRECTORY = System.getProperty("user.dir");
+private static boolean isWithinBaseDirectory(File file) throws IOException {
+        // Get the canonical path of the file
+        String canonicalPath = file.getCanonicalPath();
+        String baseDirectoryPath = new File(BASE_DIRECTORY).getCanonicalPath();
+
+        // Check if the canonical path starts with the base directory path
+        return canonicalPath.startsWith(baseDirectoryPath);
+    }
+private static int collectPaths{
+...
+ try {
+                                // Resolve the file's canonical path to get the absolute path
+                                File canonicalFile = f.getCanonicalFile();
+
+                                // Normalize the path and ensure it is within the base directory
+                                if (!isWithinBaseDirectory(canonicalFile)) {
+                                    continue; // Skip files outside the base directory
+                                }
+
+                                final String[] temp = Arrays.copyOf(scratch, depth + 1);
+                                pathList.add(temp);
+                            } catch (IOException e) {
+                                // Handle any IOExceptions (e.g., if getCanonicalPath fails)
+                                // e.printStackTrace();
+                            }
+...
+}
+\end{lstlisting}
+all the other issues can be fixed like this if they are not false positive.
+
 \begin{itemize}
-    \item \textbf{SQL Injection Risk}: Fixed by sanitizing user inputs.
-    \item \textbf{Cross-Site Scripting (XSS)}: Mitigated by escaping HTML content.
+ \item \textbf{}:
 \end{itemize}
 
 \newpage
 
 % Conclusion
 \chapter{Conclusion}
-The commons-imaging project was subjected to various quality assurance practices. Through CI/CD pipeline integration, refactoring based on SonarCloud issues, performance and mutation testing, and security analysis, we have significantly improved the project’s code quality. Future work will focus on addressing any remaining vulnerabilities and expanding the test coverage.
+The commons-imaging project was subjected to various quality assurance practices. Through CI/CD pipeline integration, refactoring based on SonarCloud issues, performance and mutation testing, and security analysis, we have improved the project’s code quality and created a test docker for it. Future work will depend on project developers focus on addressing any remaining vulnerabilities and expanding the test coverage.
 
 \newpage
 
@@ -181,8 +450,15 @@ The commons-imaging project was subjected to various quality assurance practices
 \begin{thebibliography}{99}
     \bibitem{sonarcloud} SonarCloud, \textit{SonarCloud Documentation}, \url{https://sonarcloud.io/}.
     \bibitem{docker} Docker, \textit{Docker Documentation}, \url{https://docs.docker.com/}.
+    \bibitem{jacoco}
+    \url{}
+    \bibitem{pitest}
+    \url{}
     \bibitem{jmh} JMH, \textit{JMH Documentation}, \url{https://openjdk.java.net/projects/code-tools/jmh/}.
-    \bibitem{owasp} OWASP, \textit{OWASP FindSecBugs}, \url{https://github.com/jeremylong/DependencyCheck}.
+    \bibitem{randoop}
+    \url{}
+    \bibitem{synk}
+    \url{}
 \end{thebibliography}
 
 \end{document}

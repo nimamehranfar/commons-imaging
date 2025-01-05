@@ -78,6 +78,15 @@ public class SurveyTiffFolder {
 
     }
 
+    private static final String BASE_DIRECTORY = System.getProperty("user.dir");
+    private static boolean isWithinBaseDirectory(File file) throws IOException {
+        // Get the canonical path of the file
+        String canonicalPath = file.getCanonicalPath();
+        String baseDirectoryPath = new File(BASE_DIRECTORY).getCanonicalPath();
+
+        // Check if the canonical path starts with the base directory path
+        return canonicalPath.startsWith(baseDirectoryPath);
+    }
     private static int collectPaths(final File parent, final List<String[]> pathList, final String[] scratch, final int depth) {
         if (depth == scratch.length) {
             // directory hierarchy is too deep
@@ -96,8 +105,21 @@ public class SurveyTiffFolder {
                     if (i > 0) {
                         final String ext = name.substring(i).toLowerCase();
                         if (".tif".equals(ext) || ".tiff".equals(ext)) {
-                            final String[] temp = Arrays.copyOf(scratch, depth + 1);
-                            pathList.add(temp);
+                            try {
+                                // Resolve the file's canonical path to get the absolute path
+                                File canonicalFile = f.getCanonicalFile();
+
+                                // Normalize the path and ensure it is within the base directory
+                                if (!isWithinBaseDirectory(canonicalFile)) {
+                                    continue; // Skip files outside the base directory
+                                }
+
+                                final String[] temp = Arrays.copyOf(scratch, depth + 1);
+                                pathList.add(temp);
+                            } catch (IOException e) {
+                                // Handle any IOExceptions (e.g., if getCanonicalPath fails)
+                                e.printStackTrace();
+                            }
                         }
                     }
                 }

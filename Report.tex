@@ -5,6 +5,22 @@
 \usepackage{amsmath}   % for math equations
 \usepackage{fancyhdr}  % for header and footer customization
 \usepackage[hidelinks]{hyperref}
+\usepackage{titlesec}
+\usepackage[a4paper, margin=1in]{geometry}
+\usepackage{float}
+
+\setlength{\parindent}{0pt}
+\lstset{
+    basicstyle=\ttfamily\footnotesize,
+    columns=fullflexible,
+    keepspaces=true,
+    breaklines=true,
+    breakatwhitespace=true,
+    postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space},
+}
+
+\titleformat{\chapter}[hang]{\normalfont\huge\bfseries}{\thechapter}{2pc}{}
+\titlespacing*{\chapter}{0pt}{-50pt}{20pt}
 
 \title{Testing and Quality Analysis of commons-imaging Project}
 \author{Nima Mehranfar}
@@ -27,32 +43,31 @@
 % Introduction
 \chapter{Introduction}
 \section{Background}
-The commons-imaging project is a Java library developed by the Apache Software Foundation that provides an API for working with various image formats. The goal of this project is to test the commons-imaging codebase through various quality assurance practices.
+The \textit{commons-imaging} project is a Java library developed by the Apache Software Foundation. It provides a comprehensive API for working with various image formats, enabling developers to read, write, and manipulate images with ease. This project focuses on evaluating the \textit{commons-imaging} codebase through a rigorous quality assurance process to ensure reliability, maintainability, and performance.
 
 \section{Objectives}
-The objectives of this testing project are:
+This testing project aims to achieve the following objectives:
 \begin{itemize}
-    \item Set up CI/CD pipelines for the commons-imaging project.
-    \item Perform software quality analysis using SonarCloud.
-    \item Conduct code coverage analysis with Cobertura or Jacoco.
-    \item Implement mutation testing with PiTest.
-    \item Stress test the project components using JMH for performance analysis.
-    \item Generate automated tests for poorly tested code components.
-    \item Perform security analysis using OWASP FindSecBugs and OWASP DC.
-    \item Create a Docker image for the project.
+    \item Establish CI/CD pipelines for the \textit{commons-imaging} project using GitHub Actions.
+    \item Perform software quality analysis leveraging SonarCloud for static code evaluation and reporting.
+    \item Develop a Docker image to facilitate streamlined deployment and testing environments.
+    \item Conduct code coverage analysis using JaCoCo to identify untested areas in the codebase.
+    \item Apply mutation testing with PiTest to evaluate the robustness of existing test cases.
+    \item Execute stress testing on project components with JMH to assess performance under load.
+    \item Generate automated test cases for inadequately tested code segments using Randoop.
+    \item Perform security analysis using Snyk to detect and mitigate potential vulnerabilities.
 \end{itemize}
 
 \newpage
 
 % CI/CD Pipeline Setup
 \chapter{CI/CD Pipeline}
-The commons-imaging project has been integrated into a CI/CD pipeline that is buildable both locally and on cloud servers/github. The pipeline automatically builds, tests, and deploys the application to ensure continuous integration and delivery.
+The \textit{commons-imaging} project has been integrated into a CI/CD pipeline that can be built both locally and on cloud servers, including GitHub. This pipeline automates the build, test, and deployment processes to ensure continuous integration and delivery, enabling efficient and reliable software updates.
 
 \section{CI/CD Configuration}
-The configuration of the CI/CD pipeline uses GitHub Actions.
-this is the file for github workflow:
+The CI/CD pipeline configuration utilizes GitHub Actions to automate the workflow. Below is the YAML file for the GitHub Actions workflow configuration:
 
-\begin{lstlisting}[language=java, caption=maven.yml]
+\begin{lstlisting}[language=java, caption=GitHub Actions Workflow Configuration (\texttt{maven.yml})]
 name: Java CI
 
 on: [push, pull_request, workflow_dispatch]
@@ -67,7 +82,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest, macos-13, ubuntu-latest]
-        java: [ 8, 11, 17, 21 ]
+        java: [8, 11, 17, 21]
         experimental: [false]
         include:
             - java: 23
@@ -78,17 +93,16 @@ jobs:
               experimental: true
 
     steps:
-    # https://github.com/actions/checkout/issues/226#issuecomment-854736025
-    # Why is this not an issue in other Apache Commons repos?
+    # Configure Git settings to avoid line-ending issues
     - name: Prepare git
       run: |-
         git config --global core.autocrlf false
         git config --global core.eol lf
-    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+    - uses: actions/checkout@v2  # Checkout the repository code
       with:
         persist-credentials: false
     - name: Set up JDK ${{ matrix.java }}
-      uses: actions/setup-java@8df1039502a15bceb9433410b1a100fbe190c53b # v4.5.0
+      uses: actions/setup-java@v2  # Setup JDK version
       with:
         distribution: 'temurin'
         java-version: ${{ matrix.java }}
@@ -98,53 +112,101 @@ jobs:
 
 \newpage
 
+
 % Software Quality Analysis with SonarCloud
 \chapter{Software Quality Analysis with SonarCloud}
-The software quality analysis of the commons-imaging project is conducted using SonarCloud. This tool identifies potential code quality issues and provides suggestions for improvement.
+The software quality analysis of the \textit{commons-imaging} project is conducted using SonarCloud, a powerful tool that identifies potential code quality issues and provides recommendations for improvements. By integrating SonarCloud into the development workflow, developers can continuously monitor and address various code quality aspects to ensure a robust and maintainable codebase.
 
 \section{Issues Categorization}
-The issues identified by SonarCloud are categorized as follows:
+SonarCloud categorizes the issues it identifies into three main types:
 \begin{itemize}
-    \item \textbf{Code Smells}: Unnecessary complexity or suboptimal code.
-    \item \textbf{Bugs}: Errors in the code that could lead to failures.
-    \item \textbf{Vulnerabilities}: Potential security risks in the code.
+    \item \textbf{Code Smells}: These refer to unnecessary complexity or suboptimal code patterns that may not be bugs but could lead to maintenance challenges.
+    \item \textbf{Bugs}: Errors in the code that could lead to functional failures or unexpected behavior.
+    \item \textbf{Vulnerabilities}: Potential security risks within the code that could be exploited by malicious actors.
 \end{itemize}
 
 \section{Refactoring and Rationale}
-A series of refactoring actions were taken to address the identified issues. For issues that were skipped, a rationale was provided. 
+Several refactoring actions were undertaken to address the issues identified by SonarCloud. For those issues that were skipped, a clear rationale was provided. 
 
-as the image shows there were 421 issues which 7 of them were blocker severity and 21 high severity so i fixed some issues for example:
-they were lack of assertion for test cases and confusing name(duplicate) for methods and variables.
-as you can see in the second image 9 issues fixed and 1 issue added because there was a test case which revealed a bug in the code (also developer of code itself commented that there was potentially a bug) so adding assertion was halting build process as shown in third image and error information below:
+As illustrated in the image below (Figure \ref{fig:sonar_issues}), a total of 421 issues were found, including 7 critical "blocker" severity issues and 21 "high" severity issues. I prioritized addressing these issues to improve the overall code quality.
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.68\textwidth]{placeholder_image_1.png} % Placeholder for the image showing the 421 issues
+    \caption{SonarCloud Issues Overview: 421 issues detected, including blocker and high severity issues.}
+    \label{fig:sonar_issues}
+\end{figure}
 
-Assertion
-[ERROR] Failures: 
-[ERROR]   RationalNumberTest.testRationalNumber:120 The difference between the test value and the rational number representation exceeds the tolerance. ==> expected: <0.0> but was: <0.0020000040531158447>
-.
-.
-.
+Some of the common issues included a lack of assertions in test cases and confusing or duplicate method/variable names, as demonstrated in the images below (Figures \ref{fig:assertion_issue}, \ref{fig:naming_issue}).
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.68\textwidth]{placeholder_image_2.png} % Placeholder for image showing lack of assertions
+    \caption{Example of missing assertions in test cases.}
+    \label{fig:assertion_issue}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.68\textwidth]{placeholder_image_3.png} % Placeholder for image showing confusing naming
+    \caption{Example of confusing or duplicate method/variable names.}
+    \label{fig:naming_issue}
+\end{figure}
+
+As shown in Figure \ref{fig:fixed_issues}, I successfully resolved 9 issues, but during the process, I also introduced 1 additional issue. This occurred due to a test case that revealed a bug in the code (as noted by the developer). The addition of assertions caused the build process to halt, which is evident in the error log below.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.68\textwidth]{placeholder_image_4.png} % Placeholder for image showing fixed issues
+    \caption{9 issues fixed}
+    \label{fig:fixed_issues}
+\end{figure}
+
+The error message below demonstrates the issue with floating-point precision during the test execution:
+
+\begin{lstlisting}
+Assertion Error: \\
+[ERROR] Failures: \\
+[ERROR]   RationalNumberTest.testRationalNumber:120 The difference between the test value and the rational number representation exceeds the tolerance. \\
+       ==> expected: <0.0> but was: <0.0020000040531158447> \\
+[INFO] \\
+[ERROR] Tests run: 1076, Failures: 15, Errors: 0, Skipped: 7 \\
 [INFO] 
-[ERROR] Tests run: 1076, Failures: 15, Errors: 0, Skipped: 7
-[INFO] 
 
-Patterns in Failures:
-Small differences (<1e-9) might be acceptable due to floating-point arithmetic.
-Large differences (e.g., 0.09999990463256836 or 9.223372034707292E18) are likely bugs or limitations in RationalNumber handling.
-So implemention of rationalNumber.valueOf method must be checked by the developer. problem tagged as "Accepted" on SonarQube.
+Patterns in Failures: \\
+Small differences (<1e-9) might be acceptable due to floating-point arithmetic. \\
+Large differences (e.g., 0.09999990463256836 or 9.223372034707292E18) are likely bugs or limitations in RationalNumber handling. \\
+Therefore, the implementation of \texttt{rationalNumber.valueOf()} must be reviewed by the developer. \\
+This problem was tagged as "Accepted" on SonarQube.
+\end{lstlisting}
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.68\textwidth]{placeholder_image_5.png} % Placeholder for image showing error log or halted build
+    \caption{Build halted due to failed assertions and floating-point precision issue.}
+    \label{fig:error_log}
+\end{figure}
 
-\section{docker}
- docker build -t nimamhr/commons-imaging .
- is not working because this project is an api and/or utility and doesn't contain main method so i created a simple webapp using react.js for frontend and java spring boot for backend.
+The issues related to floating-point precision need careful attention, as small discrepancies in numerical computations are often acceptable, but larger discrepancies indicate potential bugs. The developer has flagged the issue for further investigation; So I tagged this issue as "Accepted" on SonarQube.
 
 % Docker Image Creation and Containerization
-\chapter{Docker Image and Containerization}
-two Docker images for the commons-imaging-webapp frontend and backend are created and pushed to DockerHub.This image is configured to be orchestrated using Docker Compose so a docker container created to run both at the same time with configured port.
-these are the yaml files used to create docker images and container
+\chapter{Docker Image Creation and Containerization}
+The \textit{commons-imaging} project, being an API and utility without a main method, required an additional web application for demonstration purposes. A simple web application was created using React.js for the frontend and Java Spring Boot for the backend. This setup allows the utility to be integrated into a functional system for testing and deployment.
 
-\section{Dockerfile for frontend}
-\begin{lstlisting}[language=java, caption=Dockerfile for commons-imaging-test-frontend]
+\section{Docker Image and Containerization}
+Two Docker images were created for the web application's frontend and backend. These images were pushed to DockerHub and configured to run together using Docker Compose. This ensures seamless orchestration and ease of deployment.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.68\textwidth]{placeholder_image_docker.png} % Placeholder for image showing Docker setup overview
+    \caption{Docker Architecture for the commons-imaging-webapp.}
+    \label{fig:docker_architecture}
+\end{figure}
+
+\section{Dockerfile for Frontend}
+The Dockerfile for the frontend builds a React.js application and serves it using Nginx. Below is the configuration:
+
+\begin{lstlisting}[language=dockerfile, caption=Dockerfile for commons-imaging-webapp Frontend]
 FROM node:18-alpine AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
@@ -157,7 +219,10 @@ EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
 \end{lstlisting}
 
-\begin{lstlisting}[language=java, caption=Dockerfile for commons-imaging-test-backend]
+\section{Dockerfile for Backend}
+The backend is a Java Spring Boot application. The Dockerfile compiles the application and creates an executable JAR file:
+
+\begin{lstlisting}[language=dockerfile, caption=Dockerfile for commons-imaging-webapp Backend]
 FROM openjdk:24-jdk
 WORKDIR /app
 COPY .mvn/ .mvn
@@ -169,7 +234,10 @@ EXPOSE 8080
 CMD ["java", "-jar", "target/test-0.0.1-SNAPSHOT.jar"]
 \end{lstlisting}
 
-\begin{lstlisting}[language=java, caption=Example Dockerfile for container compose]
+\section{Docker Compose Configuration}
+The Docker Compose file orchestrates both the frontend and backend services, setting up a shared network and dependencies.
+
+\begin{lstlisting}[language=dockerfile, caption=Docker Compose File for Orchestration]
 version: '3.7'
 
 services:
@@ -187,7 +255,7 @@ services:
     ports:
       - "80:80"
     environment:
-      - REACT_APP_API_URL=http://backend:8080  # Set API URL to the backend service name
+      - REACT_APP_API_URL=http://backend:8080  # API URL for backend
     networks:
       - app-network
     depends_on:
@@ -198,134 +266,186 @@ networks:
     driver: bridge
 \end{lstlisting}
 
+\section{DockerHub Synchronization}
+The Docker images for both the frontend and backend are synchronized with DockerHub for easy access. They can be pulled and run using the following commands:
 
-also these repositories are synced with dockerhub and can be pulled and runned with commands below:
-
-pull with:
-\begin{lstlisting}[language=bash]
+\subsection{Pulling Docker Images}
+\begin{lstlisting}[language=bash, caption=Pull Docker Images from DockerHub]
 docker pull nimamhr/commons-imaging-webapp-frontend:latest
 docker pull nimamhr/commons-imaging-webapp-backend:latest
 \end{lstlisting}
 
-and run with:
-\begin{lstlisting}[language=bash]
+\subsection{Running Docker Containers}
+\begin{lstlisting}[language=bash, caption=Run Docker Containers]
 docker run -d -p 8080:8080 nimamhr/commons-imaging-webapp-backend:latest
 docker run -d -p 80:80 nimamhr/commons-imaging-webapp-frontend:latest
 \end{lstlisting}
 
-access with:
-http://localhost/
+\subsection{Accessing the Web Application}
+Once the containers are running, the web application can be accessed at:\\
+\url{http://localhost/}
 
-\newpage
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.68\textwidth]{placeholder_image_webapp.png} % Placeholder for image showing web app interface
+    \caption{Commons-Imaging Web Application Interface.}
+    \label{fig:webapp_interface}
+\end{figure}
+
 
 % Code Coverage Analysis
 \chapter{Code Coverage Analysis}
-Code coverage analysis is performed using Jacoco to determine the extent of test coverage in the commons-imaging project.
+Code coverage analysis was performed using JaCoCo to assess the extent of test coverage within the \textit{commons-imaging} project. This analysis helped identify untested or poorly tested portions of the codebase, guiding the addition of manual and automated tests.
 
-Setting up JaCoCo: adding plugin to pom.xml
-\begin{lstlisting}[language=bash]
+\section{Setting Up JaCoCo}
+To set up JaCoCo for the project, the JaCoCo Maven plugin was added to the \texttt{pom.xml} file. The following commands were then executed to generate code coverage reports:
+
+\begin{lstlisting}[language=bash, caption=Commands to Generate Code Coverage Reports]
 mvn clean test
 mvn clean verify
 \end{lstlisting}
 
-\section{Coverage Results}
-The code coverage results are as follows:
-Element Missed Instructions Cov.	Missed Branches	Cov.	Missed	Cxty	Missed	Lines	Missed	Methods	Missed	Classes
-Total	21,380 of 95,452	77%	2,570 of 7,199	64%	2,448	6,277	3,760	16,901	504	2,547	15	432
-\begin{itemize}
+\section{Initial Coverage Results}
+The initial code coverage results, before adding tests, are summarized below:
 
- \item \textbf{}:
-\end{itemize}
-The final code coverage results after generatiing tests and adding some manull tests(reports are on the next steps/pages) are as follows:
-Element Missed Instructions Cov.	Missed Branches	Cov.	Missed	Cxty	Missed	Lines	Missed	Methods	Missed	Classes
-Total	18,077 of 95,452	81%	2,327 of 7,199	67%	2,178	6,277	3,165	16,901	345	2,547	10	432
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|l|c|c|c|c|}
+        \hline
+        \textbf{Element} & \textbf{Missed Instructions} & \textbf{I. Cov. (\%)} & \textbf{Missed Branches} & \textbf{B. Cov. (\%)} \\ \hline
+        Total & 21,380 of 95,452 & 77\% & 2,570 of 7,199 & 64\% \\ \hline
+    \end{tabular}
+    \caption{Initial Code Coverage Results.}
+    \label{tab:initial_coverage}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.68\textwidth]{placeholder_image_initial_coverage.png} % Placeholder for image showing initial coverage results visualization
+    \caption{Visualization of Initial Code Coverage Results.}
+    \label{fig:initial_coverage_visualization}
+\end{figure}
+
+\section{Final Coverage Results After Test Improvements}
+After generating additional tests using automated tools and adding manual test cases (details are in chapters 6 & 8), the code coverage improved. The final coverage results are summarized below:
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|l|c|c|c|c|}
+        \hline
+        \textbf{Element} & \textbf{Missed Instructions} & \textbf{I. Cov. (\%)} & \textbf{Missed Branches} & \textbf{B. Cov. (\%)} \\ \hline
+        Total & 18,077 of 95,452 & 81\% & 2,327 of 7,199 & 67\% \\ \hline
+    \end{tabular}
+    \caption{Final Code Coverage Results After Test Improvements.}
+    \label{tab:final_coverage}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.68\textwidth]{placeholder_image_final_coverage.png} % Placeholder for image showing final coverage results visualization
+    \caption{Visualization of Final Code Coverage Results.}
+    \label{fig:final_coverage_visualization}
+\end{figure}
+
+\noindent The results demonstrate some improvements in test coverage and a reduction in missed methods and classes, indicating better validation of the codebase.
 
 \newpage
 
 % Mutation Testing with PiTest
 \chapter{Mutation Testing with PiTest}
-Mutation testing is used to analyze the effectiveness of the test cases by introducing small modifications (mutations) to the code and ensuring that tests can detect the changes.
+Mutation testing is performed to evaluate the effectiveness of the test cases by introducing small modifications (mutations) to the code and ensuring that the tests can detect the changes.
 
-after adding plugins and depencencies:
+After adding the necessary plugins and dependencies, the following command was run to initiate the mutation testing process:
+
+\begin{lstlisting}[language=bash, caption=Mutation Testing Command]
 mvn org.pitest:pitest-maven:mutationCoverage
-
-
-
-- Statistics
-================================================================================
->> Line Coverage (for mutated classes only): 2973/3904 (76%)
->> Generated 3564 mutations Killed 1993 (56%)
->> Mutations with no coverage 725. Test strength 70%
->> Ran 27368 tests (7.68 tests per mutation)
-Enhanced functionality available at https://www.arcmutate.com/
-[INFO] ------------------------------------------------------------------------
-[INFO] BUILD SUCCESS
-[INFO] ------------------------------------------------------------------------
-[INFO] Total time:  51:10 min
-[INFO] Finished at: 2025-01-03T04:29:03+01:00
-[INFO] ------------------------------------------------------------------------
-
-
-
+\end{lstlisting}
 
 \section{Mutation Test Results}
-The mutation test results show that:
+The overall mutation test results for the commons-imaging project are as follows:
 
-Number of Classes	Line Coverage	Mutation Coverage	Test Strength
-69	76\% 2973/3904	56\% 1993/3564	70\% 1993/2839
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|l|c|c|c|c|c|}
+        \hline
+        \textbf{Metric} & \textbf{Classes} & \textbf{Line Cov.} & \textbf{Mutation Cov.}& \textbf{Survived Mut.} & \textbf{Test Strength} \\ \hline
+        \textbf{Overall} & 69 & 76\% (2973/3904) & 56\% (1993/3564) & 44\% (1571/3564) & 70\% (1993/2839) \\ \hline
+    \end{tabular}
+    \caption{Mutation Test Results Overview.}
+    \label{tab:mutation_results}
+\end{table}
 
-
-The number of survived mutants can be calculated as:
+The number of survived mutants for the whole project is calculated as:
 
 \begin{quote}
-    Survived Mutants
-=
-Total Mutants -
-Killed Mutants
-Survived Mutants=Total Mutants-Killed Mutants
-Substitute the values:
+    Survived Mutants = Total Mutants - Killed Mutants \\
+    Survived Mutants = 3564 - 1993 = 1571
+\end{quote}
 
-Survived Mutants=Total Mutants-Killed Mutants
-Survived Mutants
-=
-3564 -
-1993
-=
-1571
-Survived Mutants=3564-1993=1571
+\section{Detailed Analysis: ColorTools.java}
+The results for \texttt{ColorTools.java} before and after adding additional tests (\texttt{ColorToolsTest.java}) were as follows:
 
-\end{quote} 
-\begin{itemize}
-    \item \textbf{Mutants Killed}:
-    \item \textbf{Surviving Mutants}:
-\end{itemize}
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|l|c|c|c|c|c|}
+        \hline
+        \textbf{Metric} & \textbf{Classes} & \textbf{Line Cov.} & \textbf{Mutation Cov.}& \textbf{Survived Mut.} & \textbf{Test Strength} \\ \hline
+        \textbf{Before} & 1 & 0\% (0/62) & 0\% (0/29) & 100\% (29/29)  & Undefined (0/0) \\ \hline
+        \textbf{After} & 1 & 60\% (37/62) & 62\% (18/29) & 38\% (11/29)  & 90\% (18/20) \\ \hline
+    \end{tabular}
+    \caption{Mutation Test Results for \texttt{ColorTools.java}.}
+    \label{tab:mutation_results_color_tools}
+\end{table}
 
-org.apache.commons.imaging.ColorTools.java zero coverage for example: lets add some tests for this class in file ColorToolsTest
-and we increased line coverage to 60\%37/62, mutation covrage to 62\%18/29	, test strength to 90\%18/20 and Surviving Mutants are 38\% 11 . not 100\% line coverage because we didn't add test for all methods.
+\noindent The following images show the progress made in terms of test coverage for \texttt{ColorTools.java}:
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.68\textwidth]{placeholder_image_color_tools_initial.png} % Placeholder for initial coverage results image
+    \caption{Initial Coverage and Mutation Results for \texttt{ColorTools.java}.}
+    \label{fig:color_tools_initial}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.68\textwidth]{placeholder_image_color_tools_improved.png} % Placeholder for improved coverage results image
+    \caption{Improved Coverage and Mutation Results for \texttt{ColorTools.java}.}
+    \label{fig:color_tools_improved}
+\end{figure}
+
+\noindent While 100\% line coverage wasn't achieved, this improvement shows a significant increase in coverage, reducing the number of surviving mutants and improving overall test strength.
 
 \newpage
+
 
 % Performance Testing with JMH
 \chapter{Performance Testing with JMH}
 Performance tests are implemented using JMH to identify performance bottlenecks in the commons-imaging project.
 
- Directory: C:/Users/mehra/IdeaProjects/commons-imaging/src/test/java/org/apache/commons/imaging/benchmark
+\section{Benchmark Setup}
+The directory containing the benchmarks is located at:
 
+\begin{lstlisting}[language=bash]
+../src/test/java/org/apache/commons/imaging/benchmark
+\end{lstlisting}
 
-Mode                 LastWriteTime         Length Name
-----                 -------------         ------ ----
--a----          1/4/2025   4:04 AM           3915 ImagingBenchmark.java
--a----          1/4/2025   3:17 AM        1042592 sample.jpg
--a----          1/4/2025   3:18 AM        1006708 sample.png
--a----          1/4/2025   3:16 AM        1131930 sample.tiff
+The following files are part of the benchmark setup:
+\begin{itemize}
+    \item \texttt{ImagingBenchmark.java}
+    \item \texttt{sample.jpg}
+    \item \texttt{sample\_baseline.jpg}
+    \item \texttt{sample.png}
+    \item \texttt{sample.tiff}
+    \item \texttt{sample.bmp}
+\end{itemize}
 
-i created some benchmarks and run by these commands:
+The benchmarks were run by first executing the following Maven command:
+
 \begin{lstlisting}[language=bash]
 mvn clean install
 \end{lstlisting}
-then
-we run ImagingBenchmark class with configuration below:
+
+Then, the \texttt{ImagingBenchmark} class was run with the following configuration:
 
 \begin{lstlisting}[language=java, caption=ImagingBenchmark-configuration]
 @BenchmarkMode(Mode.AverageTime)
@@ -337,32 +457,58 @@ we run ImagingBenchmark class with configuration below:
 \end{lstlisting}
 
 \section{Stress Testing Results}
-The most cumbersome components were stress-tested using JMH, and the results showed the following:
+The most resource-intensive components were stress-tested using JMH, and the results are summarized in the table below:
 
-Benchmark                                    Mode  Cnt    Score   Units
-ImagingBenchmark.testBmpDecoding             avgt         1.157          ms/op
-ImagingBenchmark.testBmpImageInfoRetrieval   avgt         0.300          ms/op
-ImagingBenchmark.testBmpImageWriting         avgt         8.348          ms/op
-ImagingBenchmark.testImageInfoRetrieval      avgt         0.476          ms/op
-ImagingBenchmark.testImageResizing           avgt        36.858          ms/op
-ImagingBenchmark.testJpegDecoding            avgt       212.311          ms/op
-ImagingBenchmark.testPngEncoding             avgt       132.896          ms/op
-ImagingBenchmark.testTiffMetadataExtraction  avgt         1.217          ms/op
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|l|c|c|c|}
+        \hline
+        \textbf{Benchmark} & \textbf{Mode} & \textbf{Score} & \textbf{Units} \\ \hline
+        \texttt{ImagingBenchmark.testBmpDecoding} & avgt & 1.157 & ms/op \\ \hline
+        \texttt{ImagingBenchmark.testBmpImageInfoRetrieval} & avgt & 0.300 & ms/op \\ \hline
+        \texttt{ImagingBenchmark.testBmpImageWriting} & avgt & 8.348 & ms/op \\ \hline
+        \texttt{ImagingBenchmark.testImageInfoRetrieval} & avgt & 0.476 & ms/op \\ \hline
+        \texttt{ImagingBenchmark.testImageResizing} & avgt & 36.858 & ms/op \\ \hline
+        \texttt{ImagingBenchmark.testJpegDecoding} & avgt & 212.311 & ms/op \\ \hline
+        \texttt{ImagingBenchmark.testPngEncoding} & avgt & 132.896 & ms/op \\ \hline
+        \texttt{ImagingBenchmark.testTiffMetadataExtraction} & avgt & 1.217 & ms/op \\ \hline
+    \end{tabular}
+    \caption{Stress Testing Results of Commons-Imaging Project.}
+    \label{tab:stress_testing_results}
+\end{table}
 
 
-\begin{itemize}
-    \item \textbf{Image Decoding Performance}:
-    \item \textbf{writing Time}:
-    ...
-\end{itemize}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.68\textwidth]{placeholder_benchmark_result.png} % Placeholder for benchmark result
+    \caption{Benchmark Results of Commons-Imaging Project.}
+    \label{fig:benchmark_result}
+\end{figure}
 
 \newpage
+
 
 % Automated Test Generation
 \chapter{Automated Test Generation}
 Automated tests were generated using Randoop to improve coverage on poorly tested components. These tests focus on edge cases and scenarios not previously covered.
 
-from jacoco report we know that 3 packages (internal,formats/psd/dataparsers,formats/tiff) have low coverage as seen in image below so we want to generate test for all the classes inside them.
+\section{Low Coverage Packages}
+From the JaCoCo report, we identified that three packages had low coverage: 
+\begin{itemize}
+    \item \texttt{internal}
+    \item \texttt{formats/psd/dataparsers}
+    \item \texttt{formats/tiff}
+\end{itemize}
+The report also highlights the classes within these packages that need additional test coverage, as shown in the image below:
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.68\textwidth]{image_placeholder_1.png} % Image placeholder
+    \caption{JaCoCo report showing low coverage in specific packages.}
+    \label{fig:jacoco-report}
+\end{figure}
+
+\section{Test Generation Process}
+To generate tests for all the classes within these packages, we first listed the classes using the following commands:
 
 \begin{lstlisting}[language=bash]
 cd target/classes
@@ -371,94 +517,145 @@ find org/apache/commons/imaging/formats/psd/dataparsers -name "*.class" | sed 's
 find org/apache/commons/imaging/formats/tiff -name "*.class" | sed 's/\//./g' | sed 's/\.class\$//'
 \end{lstlisting}
 
-then pasted all the classes to Randoop\_Test\_Classes.txt file and run command below and output to randoop folder:
+These commands search for all `.class` files in the specified directories and convert them into fully qualified class names, which are then cpied and saved to a text file called \texttt{Randoop\_Test\_Classes.txt} manually.
+
+\section{Running Randoop}
+Once the class names were added to the \texttt{Randoop\_Test\_Classes.txt} file, we ran the following command to generate the tests:
+
 \begin{lstlisting}[language=bash]
 java -cp "randoop-all-4.3.2.jar;target/classes" randoop.main.Main gentests $(Get-Content Randoop_Test_Classes.txt | ForEach-Object \{ "--testclass=$\_"\} ) --time-limit=200 --junit-output-dir=src/test/java/org/apache/commons/imaging/randoop/
 \end{lstlisting}
-with some renaming and replacing redundent classes we can now achive higher coverage as we see in the report as seen in the image below but of course this methode is not efficient enough to cover all methods with enough tests and it produces way more tests than needed and too much redundency.
 
+This command uses the Randoop tool to generate tests for the classes listed in the text file. The generated tests are stored in the \texttt{randoop} folder and are written in JUnit format.
+
+\section{Test Coverage Improvement}
+After generating the tests, we observed an improvement in coverage, as shown in the following image:
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{image_placeholder_2} % Image placeholder
+    \caption{Coverage improvement after generating tests using Randoop.}
+    \label{fig:coverage-improvement}
+\end{figure}
+
+\section{Challenges and Limitations}
+While this method improved coverage, it has some limitations:
+\begin{itemize}
+    \item The generated tests often contain redundancy.
+    \item It does not guarantee sufficient coverage for all methods.
+    \item The process generates more tests than are necessary, leading to inefficiency.
+\end{itemize}
+Despite these limitations, automated test generation with Randoop provides a valuable first step in improving test coverage, especially for poorly tested components.
 
 \newpage
 
-% Security Analysis with synk
-\chapter{Security Analysis with synk}
 
-steps:
+% Security Analysis with Snyk
+\chapter{Security Analysis with Snyk}
+
+\section{Steps to Run Snyk}
+To perform security analysis using Snyk, follow these steps:
+
 \begin{lstlisting}[language=bash]
 npm install -g snyk
 snyk auth
 snyk test
 snyk test --json > snyk-report.json
 \end{lstlisting}
-no vulnerablity for commons imaging as seen in the image below. but there are some vulnerable pathes in the webapp backend dockerfile so i will report them instead
 
+\section{Vulnerability Report}
+There were no vulnerabilities found for the commons-imaging project, as seen in the image below. However, there are some vulnerable paths in the web app backend Dockerfile, which will be reported instead.
 
-for example just changing the openjdk version to newer one removes so many of the vulnerablities like the image below.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.65\textwidth]{image_placeholder_1.png} % Image placeholder for Snyk report
+    \caption{Snyk report showing no vulnerabilities for commons-imaging.}
+    \label{fig:snyk-report}
+\end{figure}
+
+By changing the OpenJDK version to a newer one, many of the vulnerabilities were resolved, as shown in the image below:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.65\textwidth]{image_placeholder_2.png} % Image placeholder for OpenJDK version update
+    \caption{Vulnerabilities reduced after updating the OpenJDK version.}
+    \label{fig:openjdk-update}
+\end{figure}
 
 \section{Security Issues Found}
-The following security issues were identified: 7 low level vulnerability found and they all are Unsanitized input and seem to be false positive because this project is api and utility so there is no allowed directory and user can use any directory they want but if we want to limit user for his current directory, we can fix the all issues like the example image below Unsanitized input from a command line argument flows into listFiles, where it is used as a path. This may result in a Path Traversal vulnerability and allow an attacker to manipulate arbitrary files in class: src/test/java/org/apache/commons/imaging/examples/tiff/SurveyTiffFolder.java:collectPaths.class:
-[image]
+During the analysis, the following security issues were identified:
+\begin{itemize}
+    \item 7 "low" level vulnerabilities, all of which were related to unsanitized input.
+    \item The vulnerabilities seem to be false positives because the project is an API and utility, and there is no allowed directory. Users can use any directory they want.
+    \item However, if we want to limit the user to their current directory, we can fix these issues. For example, unsanitized input from a command-line argument was found in the file \texttt{src/test/java/org/apache/commons/imaging/examples/tiff \\ /SurveyTiffFolder.java:collectPaths.class}, leading to a potential \texttt{Path Traversal} vulnerability.
+\end{itemize}
 
-and we fix it by:
+Below is an image showing the identified vulnerability:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.65\textwidth]{image_placeholder_3.png} % Image placeholder for identified vulnerability
+    \caption{Unsanitized input vulnerability found in SurveyTiffFolder.java:collectPaths.}
+    \label{fig:unsanitized-input}
+\end{figure}
+
+To fix this issue, we can ensure that the file paths remain within the base directory, as shown in the code snippet below:
 
 \begin{lstlisting}[language=java, caption=SurveyTiffFolder.java:collectPath.class fix]
-private static final String BASE\_DIRECTORY = System.getProperty("user.dir");
+private static final String BASE_DIRECTORY = System.getProperty("user.dir");
+
 private static boolean isWithinBaseDirectory(File file) throws IOException {
-        // Get the canonical path of the file
-        String canonicalPath = file.getCanonicalPath();
-        String baseDirectoryPath = new File(BASE_DIRECTORY).getCanonicalPath();
+    // Get the canonical path of the file
+    String canonicalPath = file.getCanonicalPath();
+    String baseDirectoryPath = new File(BASE_DIRECTORY).getCanonicalPath();
 
-        // Check if the canonical path starts with the base directory path
-        return canonicalPath.startsWith(baseDirectoryPath);
+    // Check if the canonical path starts with the base directory path
+    return canonicalPath.startsWith(baseDirectoryPath);
+}
+
+private static int collectPaths() {
+    ...
+    try {
+        // Resolve the file's canonical path to get the absolute path
+        File canonicalFile = f.getCanonicalFile();
+
+        // Normalize the path and ensure it is within the base directory
+        if (!isWithinBaseDirectory(canonicalFile)) {
+            continue; // Skip files outside the base directory
+        }
+
+        final String[] temp = Arrays.copyOf(scratch, depth + 1);
+        pathList.add(temp);
+    } catch (IOException e) {
+        // Handle any IOExceptions (e.g., if getCanonicalPath fails)
     }
-private static int collectPaths{
-...
- try {
-                                // Resolve the file's canonical path to get the absolute path
-                                File canonicalFile = f.getCanonicalFile();
-
-                                // Normalize the path and ensure it is within the base directory
-                                if (!isWithinBaseDirectory(canonicalFile)) {
-                                    continue; // Skip files outside the base directory
-                                }
-
-                                final String[] temp = Arrays.copyOf(scratch, depth + 1);
-                                pathList.add(temp);
-                            } catch (IOException e) {
-                                // Handle any IOExceptions (e.g., if getCanonicalPath fails)
-                                // e.printStackTrace();
-                            }
-...
+    ...
 }
 \end{lstlisting}
-all the other issues can be fixed like this if they are not false positive.
 
-\begin{itemize}
- \item \textbf{}:
-\end{itemize}
+This fix ensures that the file operations are limited to the base directory, preventing path traversal vulnerabilities. 
+
+\section{Fixing Other Issues}
+All other identified issues can be fixed in a similar manner if they are not false positives, by sanitizing the inputs and ensuring that file operations are safe.
 
 \newpage
 
+
 % Conclusion
 \chapter{Conclusion}
-The commons-imaging project was subjected to various quality assurance practices. Through CI/CD pipeline integration, refactoring based on SonarCloud issues, performance and mutation testing, and security analysis, we have improved the project’s code quality and created a test docker for it. Future work will depend on project developers focus on addressing any remaining vulnerabilities and expanding the test coverage.
+The commons-imaging project underwent various quality assurance practices. Through CI/CD pipeline integration, refactoring based on SonarCloud issues, performance and mutation testing, and security analysis, we have significantly improved the project’s code quality and created a test Docker for it. Future work will depend on project developers focusing on addressing any remaining vulnerabilities and expanding the test coverage.
 
 \newpage
 
 % References
 \chapter{References}
-\begin{thebibliography}{99}
-    \bibitem{sonarcloud} SonarCloud, \textit{SonarCloud Documentation}, \url{https://sonarcloud.io/}.
-    \bibitem{docker} Docker, \textit{Docker Documentation}, \url{https://docs.docker.com/}.
-    \bibitem{jacoco}
-    \url{}
-    \bibitem{pitest}
-    \url{}
-    \bibitem{jmh} JMH, \textit{JMH Documentation}, \url{https://openjdk.java.net/projects/code-tools/jmh/}.
-    \bibitem{randoop}
-    \url{}
-    \bibitem{synk}
-    \url{}
-\end{thebibliography}
+\begin{itemize}
+    \item SonarCloud Documentation: \url{https://sonarcloud.io/}.
+    \item Docker Documentation: \url{https://docs.docker.com/}.
+    \item JaCoCo Documentation: \url{https://www.jacoco.org/jacoco/}.
+    \item PiTest Documentation: \url{https://pitest.org/}.
+    \item JMH Documentation: \url{https://openjdk.java.net/projects/code-tools/jmh/}.
+    \item Randoop Documentation: \url{http://randoop.github.io/}.
+    \item Snyk Documentation: \url{https://snyk.io/}.
+\end{itemize}
 
 \end{document}

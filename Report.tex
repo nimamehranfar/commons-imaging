@@ -5,9 +5,11 @@
 \usepackage{amsmath}   % for math equations
 \usepackage{fancyhdr}  % for header and footer customization
 \usepackage[hidelinks]{hyperref}
+\usepackage[hyphens]{url} % for URLs
 \usepackage{titlesec}
 \usepackage[a4paper, margin=1in]{geometry}
 \usepackage{float}
+\usepackage{minted}
 
 \setlength{\parindent}{0pt}
 \lstset{
@@ -18,11 +20,20 @@
     breakatwhitespace=true,
     postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space},
 }
+% Configure hyperref to remove link colors
+\hypersetup{
+    colorlinks=false,   % Disables colored links
+    pdfborder={0 0 0},  % Removes link borders
+    linkcolor=black,    % Sets link color to black
+    filecolor=black,    % Sets file link color to black
+    urlcolor=black      % Sets URL color to black
+}
 
 \titleformat{\chapter}[hang]{\normalfont\huge\bfseries}{\thechapter}{2pc}{}
-\titlespacing*{\chapter}{0pt}{-50pt}{20pt}
+\titlespacing*{\chapter}{0pt}{-60pt}{20pt}
 
-\title{Testing and Quality Analysis of commons-imaging Project}
+\title{Testing and Quality Analysis of\\commons-imaging Project\\ \\
+\vspace{0.5cm}\href{https://github.com/nimamehranfar/commons-imaging}{\texttt{GitHub Repository}}\\}
 \author{Nima Mehranfar}
 \date{\today}
 
@@ -40,9 +51,16 @@
 \tableofcontents
 \newpage
 
+% List of Figures
+\listoffigures
+\newpage
+
+% List of Tables
+\listoftables
+\newpage
+
 % Introduction
 \chapter{Introduction}
-\section{Background}
 The \textit{commons-imaging} project is a Java library developed by the Apache Software Foundation. It provides a comprehensive API for working with various image formats, enabling developers to read, write, and manipulate images with ease. This project focuses on evaluating the \textit{commons-imaging} codebase through a rigorous quality assurance process to ensure reliability, maintainability, and performance.
 
 \section{Objectives}
@@ -120,44 +138,51 @@ The software quality analysis of the \textit{commons-imaging} project is conduct
 \section{Issues Categorization}
 SonarCloud categorizes the issues it identifies into three main types:
 \begin{itemize}
-    \item \textbf{Code Smells}: These refer to unnecessary complexity or suboptimal code patterns that may not be bugs but could lead to maintenance challenges.
-    \item \textbf{Bugs}: Errors in the code that could lead to functional failures or unexpected behavior.
-    \item \textbf{Vulnerabilities}: Potential security risks within the code that could be exploited by malicious actors.
+    \item \textbf{Maintainability}: These refer to unnecessary complexity or suboptimal code patterns that may not be bugs but could lead to maintenance challenges.
+    \item \textbf{Reliability}: Errors in the code that could lead to functional failures or unexpected behavior.
+    \item \textbf{Security}: Potential security risks within the code that could be exploited by malicious actors.
 \end{itemize}
 
 \section{Refactoring and Rationale}
 Several refactoring actions were undertaken to address the issues identified by SonarCloud. For those issues that were skipped, a clear rationale was provided. 
 
-As illustrated in the image below (Figure \ref{fig:sonar_issues}), a total of 421 issues were found, including 7 critical "blocker" severity issues and 21 "high" severity issues. I prioritized addressing these issues to improve the overall code quality.
+As illustrated in the image below (Figure \ref{fig:sonar_issues}), a total of 2325 issues were found, including 18 critical "blocker" severity issues and 333 "high" severity issues. All the "blocker" issues were maintainability; And I prioritized addressing some of the these issues to improve the overall code quality.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.68\textwidth]{placeholder_image_1.png} % Placeholder for the image showing the 421 issues
-    \caption{SonarCloud Issues Overview: 421 issues detected, including blocker and high severity issues.}
+    \includegraphics[width=1\textwidth]{Report_Img/SonarQube_issues.png}
+    \caption{SonarCloud Issues Overview: 2325 issues detected, including blocker and high severity issues.}
     \label{fig:sonar_issues}
 \end{figure}
 
-Some of the common issues included a lack of assertions in test cases and confusing or duplicate method/variable names, as demonstrated in the images below (Figures \ref{fig:assertion_issue}, \ref{fig:naming_issue}).
+Some of the common issues included a lack of assertions in test cases, confusing or duplicate method/variable names and missing break in switch cases, as demonstrated in the images below (Figures \ref{fig:assertion_issue}, \ref{fig:naming_issue}, \ref{fig:missing_break_issue}).
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.68\textwidth]{placeholder_image_2.png} % Placeholder for image showing lack of assertions
+    \includegraphics[width=1\textwidth]{Report_Img/assert_issue.png}
     \caption{Example of missing assertions in test cases.}
     \label{fig:assertion_issue}
 \end{figure}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.68\textwidth]{placeholder_image_3.png} % Placeholder for image showing confusing naming
+    \includegraphics[width=1\textwidth]{Report_Img/naming_issue.png}
     \caption{Example of confusing or duplicate method/variable names.}
     \label{fig:naming_issue}
 \end{figure}
 
-As shown in Figure \ref{fig:fixed_issues}, I successfully resolved 9 issues, but during the process, I also introduced 1 additional issue. This occurred due to a test case that revealed a bug in the code (as noted by the developer). The addition of assertions caused the build process to halt, which is evident in the error log below.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{Report_Img/break_issue.png}
+    \caption{Example of missing break in switch case.}
+    \label{fig:missing_break_issue}
+\end{figure}
+
+As shown in Figure \ref{fig:fixed_issues}, I successfully resolved 9 issues, but during the process, I also introduced 1 additional issue which is related to commented-out lines of code in the failing test case assertion. This occurred due to a test case that revealed a bug in the code (as noted by the developer). The addition of assertions caused the build process to halt, which is evident in the error log below.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.68\textwidth]{placeholder_image_4.png} % Placeholder for image showing fixed issues
+    \includegraphics[width=1\textwidth]{Report_Img/issues_fixed.png}
     \caption{9 issues fixed}
     \label{fig:fixed_issues}
 \end{figure}
@@ -182,12 +207,41 @@ This problem was tagged as "Accepted" on SonarQube.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.68\textwidth]{placeholder_image_5.png} % Placeholder for image showing error log or halted build
-    \caption{Build halted due to failed assertions and floating-point precision issue.}
-    \label{fig:error_log}
+    \includegraphics[width=1\textwidth]{Report_Img/assert_fix_error.png}
+    \caption{Build halted due to failed assertions and floating-point precision issue of this test case.}
+    \label{fig:assertion_error}
 \end{figure}
 
 The issues related to floating-point precision need careful attention, as small discrepancies in numerical computations are often acceptable, but larger discrepancies indicate potential bugs. The developer has flagged the issue for further investigation; So I tagged this issue as "Accepted" on SonarQube.
+\\
+\\
+\\
+Also in (Figures \ref{fig:unfixable_naming_issue}, \ref{fig:unfixable_naming_issue_accepted}), there is an issue labeled "child class fields should not shadow parent class fields" which is unfixable because the parent class field is a protected variable and cannot be accessed by the child class so any change to both the naming and/or syntax/keywords used for variables could result in an unwanted scenario and/or a bug. So I tagged this issue as "accepted" too.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{Report_Img/unfixable_naming_issue.png}
+    \caption{Unfixable naming issue}
+    \label{fig:unfixable_naming_issue}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{Report_Img/unfixable_naming_issue_accepted.png}
+    \caption{Unfixable naming issue tagged as "accepted"}
+    \label{fig:unfixable_naming_issue_accepted}
+\end{figure}
+
+
+
+
+
+
+
+
+
+
+
 
 % Docker Image Creation and Containerization
 \chapter{Docker Image Creation and Containerization}
@@ -198,7 +252,7 @@ Two Docker images were created for the web application's frontend and backend. T
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.68\textwidth]{placeholder_image_docker.png} % Placeholder for image showing Docker setup overview
+    \includegraphics[width=1\textwidth]{Report_Img/docker_desktop.png}
     \caption{Docker Architecture for the commons-imaging-webapp.}
     \label{fig:docker_architecture}
 \end{figure}
@@ -268,15 +322,15 @@ networks:
 
 \section{DockerHub Synchronization}
 The Docker images for both the frontend and backend are synchronized with DockerHub for easy access. They can be pulled and run using the following commands:
-
+\newpage
 \subsection{Pulling Docker Images}
 \begin{lstlisting}[language=bash, caption=Pull Docker Images from DockerHub]
 docker pull nimamhr/commons-imaging-webapp-frontend:latest
 docker pull nimamhr/commons-imaging-webapp-backend:latest
 \end{lstlisting}
 
-\subsection{Running Docker Containers}
-\begin{lstlisting}[language=bash, caption=Run Docker Containers]
+\subsection{Running Docker Images}
+\begin{lstlisting}[language=bash, caption=Run Docker Images]
 docker run -d -p 8080:8080 nimamhr/commons-imaging-webapp-backend:latest
 docker run -d -p 80:80 nimamhr/commons-imaging-webapp-frontend:latest
 \end{lstlisting}
@@ -287,8 +341,8 @@ Once the containers are running, the web application can be accessed at:\\
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.68\textwidth]{placeholder_image_webapp.png} % Placeholder for image showing web app interface
-    \caption{Commons-Imaging Web Application Interface.}
+    \includegraphics[width=1\textwidth]{Report_Img/localhost.png}
+    \caption{Commons-Imaging Test Web Application Interface.}
     \label{fig:webapp_interface}
 \end{figure}
 
@@ -321,13 +375,13 @@ The initial code coverage results, before adding tests, are summarized below:
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.68\textwidth]{placeholder_image_initial_coverage.png} % Placeholder for image showing initial coverage results visualization
+    \includegraphics[width=1\textwidth]{Report_Img/init_cov.png}
     \caption{Visualization of Initial Code Coverage Results.}
     \label{fig:initial_coverage_visualization}
 \end{figure}
-
+\newpage
 \section{Final Coverage Results After Test Improvements}
-After generating additional tests using automated tools and adding manual test cases (details are in chapters 6 & 8), the code coverage improved. The final coverage results are summarized below:
+After generating additional tests using automated tools and adding manual test cases (details are in chapters 6 \& 8), the code coverage improved. The final coverage results are summarized below:
 
 \begin{table}[H]
     \centering
@@ -342,7 +396,7 @@ After generating additional tests using automated tools and adding manual test c
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.68\textwidth]{placeholder_image_final_coverage.png} % Placeholder for image showing final coverage results visualization
+    \includegraphics[width=1\textwidth]{Report_Img/final_cov.png}
     \caption{Visualization of Final Code Coverage Results.}
     \label{fig:final_coverage_visualization}
 \end{figure}
@@ -382,6 +436,13 @@ The number of survived mutants for the whole project is calculated as:
     Survived Mutants = 3564 - 1993 = 1571
 \end{quote}
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{Report_Img/pit.png}
+    \caption{Visualization of PIT Coverage Results.}
+    \label{fig:mutation_coverage}
+\end{figure}
+\newpage
 \section{Detailed Analysis: ColorTools.java}
 The results for \texttt{ColorTools.java} before and after adding additional tests (\texttt{ColorToolsTest.java}) were as follows:
 
@@ -401,14 +462,14 @@ The results for \texttt{ColorTools.java} before and after adding additional test
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.68\textwidth]{placeholder_image_color_tools_initial.png} % Placeholder for initial coverage results image
+    \includegraphics[width=1\textwidth]{Report_Img/pit_init.png}
     \caption{Initial Coverage and Mutation Results for \texttt{ColorTools.java}.}
     \label{fig:color_tools_initial}
 \end{figure}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.68\textwidth]{placeholder_image_color_tools_improved.png} % Placeholder for improved coverage results image
+    \includegraphics[width=1\textwidth]{Report_Img/pit_final.png}
     \caption{Improved Coverage and Mutation Results for \texttt{ColorTools.java}.}
     \label{fig:color_tools_improved}
 \end{figure}
@@ -455,7 +516,7 @@ Then, the \texttt{ImagingBenchmark} class was run with the following configurati
 @Warmup(iterations = 3)
 @Measurement(iterations = 5)
 \end{lstlisting}
-
+\newpage
 \section{Stress Testing Results}
 The most resource-intensive components were stress-tested using JMH, and the results are summarized in the table below:
 
@@ -480,8 +541,8 @@ The most resource-intensive components were stress-tested using JMH, and the res
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.68\textwidth]{placeholder_benchmark_result.png} % Placeholder for benchmark result
-    \caption{Benchmark Results of Commons-Imaging Project.}
+    \includegraphics[width=1\textwidth]{Report_Img/benchmark.png}
+    \caption{Benchmark Results of Selected Methods of Commons-Imaging Project.}
     \label{fig:benchmark_result}
 \end{figure}
 
@@ -502,7 +563,7 @@ From the JaCoCo report, we identified that three packages had low coverage:
 The report also highlights the classes within these packages that need additional test coverage, as shown in the image below:
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.68\textwidth]{image_placeholder_1.png} % Image placeholder
+    \includegraphics[width=1\textwidth]{Report_Img/auto_gen_init.png}
     \caption{JaCoCo report showing low coverage in specific packages.}
     \label{fig:jacoco-report}
 \end{figure}
@@ -512,12 +573,12 @@ To generate tests for all the classes within these packages, we first listed the
 
 \begin{lstlisting}[language=bash]
 cd target/classes
-find org/apache/commons/imaging/internal -name "*.class" | sed 's/\//./g' | sed 's/\.class\$//'
-find org/apache/commons/imaging/formats/psd/dataparsers -name "*.class" | sed 's/\//./g' | sed 's/\.class\$//'
-find org/apache/commons/imaging/formats/tiff -name "*.class" | sed 's/\//./g' | sed 's/\.class\$//'
+find org/apache/commons/imaging/internal -name "*.class" | sed 's/\//./g' | sed 's/\.class$//'
+find org/apache/commons/imaging/formats/psd/dataparsers -name "*.class" | sed 's/\//./g' | sed 's/\.class$//'
+find org/apache/commons/imaging/formats/tiff -name "*.class" | sed 's/\//./g' | sed 's/\.class$//'
 \end{lstlisting}
 
-These commands search for all `.class` files in the specified directories and convert them into fully qualified class names, which are then cpied and saved to a text file called \texttt{Randoop\_Test\_Classes.txt} manually.
+These commands search for all `.class` files in the specified directories and convert them into fully qualified class names, which are then copied and saved to a text file called \texttt{Randoop\_Test\_Classes.txt} manually.
 
 \section{Running Randoop}
 Once the class names were added to the \texttt{Randoop\_Test\_Classes.txt} file, we ran the following command to generate the tests:
@@ -525,18 +586,58 @@ Once the class names were added to the \texttt{Randoop\_Test\_Classes.txt} file,
 \begin{lstlisting}[language=bash]
 java -cp "randoop-all-4.3.2.jar;target/classes" randoop.main.Main gentests $(Get-Content Randoop_Test_Classes.txt | ForEach-Object \{ "--testclass=$\_"\} ) --time-limit=200 --junit-output-dir=src/test/java/org/apache/commons/imaging/randoop/
 \end{lstlisting}
-
+\\
 This command uses the Randoop tool to generate tests for the classes listed in the text file. The generated tests are stored in the \texttt{randoop} folder and are written in JUnit format.
 
 \section{Test Coverage Improvement}
 After generating the tests, we observed an improvement in coverage, as shown in the following image:
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{image_placeholder_2} % Image placeholder
+    \includegraphics[width=\textwidth]{Report_Img/auto_gen_final.png}
     \caption{Coverage improvement after generating tests using Randoop.}
     \label{fig:coverage-improvement}
 \end{figure}
 
+% Table for org.apache.commons.imaging.internal
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|l|c|c|}
+        \hline
+        \textbf{Metric} & \textbf{Instruction Coverage} & \textbf{Branch Coverage} \\ \hline
+        \textbf{Before} & 28\% & 25\% \\ \hline
+        \textbf{After}  & 48\% & 44\% \\ \hline
+    \end{tabular}
+    \caption{Coverage for \texttt{org.apache.commons.imaging.internal}.}
+    \label{tab:coverage_internal}
+\end{table}
+
+% Table for org.apache.commons.imaging.formats.psd.dataparsers
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|l|c|c|}
+        \hline
+        \textbf{Metric} & \textbf{Instruction Coverage} & \textbf{Branch Coverage} \\ \hline
+        \textbf{Before} & 33\% & 66\% \\ \hline
+        \textbf{After}  & 35\% & 66\% \\ \hline
+    \end{tabular}
+    \caption{Coverage for \texttt{org.apache.commons.imaging.formats.psd.dataparsers}.}
+    \label{tab:coverage_psd_dataparsers}
+\end{table}
+
+% Table for org.apache.commons.imaging.formats.tiff
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|l|c|c|}
+        \hline
+        \textbf{Metric} & \textbf{Instruction Coverage} & \textbf{Branch Coverage} \\ \hline
+        \textbf{Before} & 57\% & 51\% \\ \hline
+        \textbf{After}  & 69\% & 62\% \\ \hline
+    \end{tabular}
+    \caption{Coverage for \texttt{org.apache.commons.imaging.formats.tiff}.}
+    \label{tab:coverage_tiff}
+\end{table}
+
+\newpage
 \section{Challenges and Limitations}
 While this method improved coverage, it has some limitations:
 \begin{itemize}
@@ -567,7 +668,7 @@ There were no vulnerabilities found for the commons-imaging project, as seen in 
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.65\textwidth]{image_placeholder_1.png} % Image placeholder for Snyk report
+    \includegraphics[width=0.65\textwidth]{Report_Img/synk.png}
     \caption{Snyk report showing no vulnerabilities for commons-imaging.}
     \label{fig:snyk-report}
 \end{figure}
@@ -576,7 +677,7 @@ By changing the OpenJDK version to a newer one, many of the vulnerabilities were
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.65\textwidth]{image_placeholder_2.png} % Image placeholder for OpenJDK version update
+    \includegraphics[width=0.65\textwidth]{Report_Img/synk_backend.png}
     \caption{Vulnerabilities reduced after updating the OpenJDK version.}
     \label{fig:openjdk-update}
 \end{figure}
@@ -584,8 +685,8 @@ By changing the OpenJDK version to a newer one, many of the vulnerabilities were
 \section{Security Issues Found}
 During the analysis, the following security issues were identified:
 \begin{itemize}
-    \item 7 "low" level vulnerabilities, all of which were related to unsanitized input.
-    \item The vulnerabilities seem to be false positives because the project is an API and utility, and there is no allowed directory. Users can use any directory they want.
+    \item 7 "low" level issues, all of which were related to unsanitized input.
+    \item This issues seem to be false positives because the project is an API and utility, and there is no allowed directory. Users can use any directory they want.
     \item However, if we want to limit the user to their current directory, we can fix these issues. For example, unsanitized input from a command-line argument was found in the file \texttt{src/test/java/org/apache/commons/imaging/examples/tiff \\ /SurveyTiffFolder.java:collectPaths.class}, leading to a potential \texttt{Path Traversal} vulnerability.
 \end{itemize}
 
@@ -593,7 +694,7 @@ Below is an image showing the identified vulnerability:
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.65\textwidth]{image_placeholder_3.png} % Image placeholder for identified vulnerability
+    \includegraphics[width=0.65\textwidth]{Report_Img/synk_input_issue.png}
     \caption{Unsanitized input vulnerability found in SurveyTiffFolder.java:collectPaths.}
     \label{fig:unsanitized-input}
 \end{figure}
@@ -633,8 +734,7 @@ private static int collectPaths() {
 \end{lstlisting}
 
 This fix ensures that the file operations are limited to the base directory, preventing path traversal vulnerabilities. 
-
-\section{Fixing Other Issues}
+\\
 All other identified issues can be fixed in a similar manner if they are not false positives, by sanitizing the inputs and ensuring that file operations are safe.
 
 \newpage
@@ -643,6 +743,8 @@ All other identified issues can be fixed in a similar manner if they are not fal
 % Conclusion
 \chapter{Conclusion}
 The commons-imaging project underwent various quality assurance practices. Through CI/CD pipeline integration, refactoring based on SonarCloud issues, performance and mutation testing, and security analysis, we have significantly improved the project’s code quality and created a test Docker for it. Future work will depend on project developers focusing on addressing any remaining vulnerabilities and expanding the test coverage.
+\\ \\
+The source code for this project is available at \href{https://github.com/nimamehranfar/commons-imaging}{\texttt{GitHub Repository}}.
 
 \newpage
 
@@ -656,6 +758,7 @@ The commons-imaging project underwent various quality assurance practices. Throu
     \item JMH Documentation: \url{https://openjdk.java.net/projects/code-tools/jmh/}.
     \item Randoop Documentation: \url{http://randoop.github.io/}.
     \item Snyk Documentation: \url{https://snyk.io/}.
+    \item ChatGPT: \url{https://chatgpt.com/}.
 \end{itemize}
 
 \end{document}

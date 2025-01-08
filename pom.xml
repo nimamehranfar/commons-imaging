@@ -148,6 +148,7 @@
         <configuration>
           <includes>
             <include>**/*Test.java</include>
+            <exclude>src/test/java/org/apache/commons/imaging/randoop/**</exclude>
           </includes>
         </configuration>
       </plugin>

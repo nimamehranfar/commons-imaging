@@ -273,6 +273,7 @@
               <exclude>commons-imaging-webapp/**</exclude>
               <exclude>Randoop_Test_Classes.txt</exclude>
               <exclude>**/randoop/**</exclude>
+			  <exclude>**/*.pptx</exclude>
             </excludes>
           </configuration>
         </plugin>
@@ -449,6 +450,7 @@
             <exclude>commons-imaging-webapp/**</exclude>
             <exclude>Randoop_Test_Classes.txt</exclude>
             <exclude>**/randoop/**</exclude>
+			<exclude>**/*.pptx</exclude>
           </excludes>
         </configuration>
       </plugin>

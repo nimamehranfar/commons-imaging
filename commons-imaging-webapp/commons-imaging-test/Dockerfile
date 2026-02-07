@@ -17,7 +17,7 @@ COPY . ./
 RUN npm run build
 
 # Use a web server (nginx) to serve the static files
-FROM nginx:alpine
+FROM nginx:1.29.5-alpine3.23
 
 # Copy the build output to the nginx server directory
 COPY --from=build /app/build /usr/share/nginx/html
